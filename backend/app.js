@@ -2,8 +2,10 @@
 
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require('path');
 
 const userRoutes = require("./routes/user");
+const sauceRoutes = require("./routes/sauce");
 
 // Connexion à MongoDB
 
@@ -34,8 +36,11 @@ const app = express();
     app.use(express.json());
 
     // Création des routes
+
+    app.use('/images', express.static(path.join(__dirname, 'images')));
     
     app.use("/api/auth", userRoutes);
+    app.use("/api/sauces", sauceRoutes);
 
 // Exporter la ressource
 
