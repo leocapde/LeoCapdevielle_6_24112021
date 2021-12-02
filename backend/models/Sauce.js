@@ -5,15 +5,15 @@ const mongoose = require("mongoose");
 // Création des models
 
 const sauceSchema = mongoose.Schema({
-    userId: {type: String, require: true},
-    name: {type: String, require: true},
-    manufacturer: {type: String, require: true},
-    description: {type: String, require: true},
-    mainPepper: {type: String, require: true},
-    imageUrl: {type: String, require: true},
-    heat: {type: Number, require: true},
-    likes: {type: Number, require: true},
-    dislikes: {type: Number, require: true},
+    userId: {type: String, required: true},
+    name: {type: String, required: true},
+    manufacturer: {type: String, required: true},
+    description: {type: String, required: true},
+    mainPepper: {type: String, required: true},
+    imageUrl: {type: String, required: true},
+    heat: {type: Number, required: true},
+    likes: {type: Number, default: 0},
+    dislikes: {type: Number, default: 0},
     userLiked: [{type: String}],
     userDisliked: [{type: String}]
 });
