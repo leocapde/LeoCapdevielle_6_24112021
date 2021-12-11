@@ -30,25 +30,37 @@ exports.createSauce = (req, res, next) => {
 };
 
 exports.modifySauce = (req, res, next) => {
-    const sauceObject = req.file ? 
-    {
-        ...JSON.parse(req.body.sauce),
-        imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
-    } : {...req.body};
-    Sauce.updateOne({_id: req.params.id}, {...sauceObject, _id: req.params.id})
-    .then(() => res.status(200).json({message: "Sauce modifiée !"}))
+    Sauce.findOne({_id: req.params.id})
+    .then(sauce => {
+        if (sauce.userId === req.token.userId) {
+            const sauceObject = req.file ? 
+            {
+                ...JSON.parse(req.body.sauce),
+                imageUrl: `${req.protocol}://${req.get("host")}/images/${req.file.filename}`
+            } : {...req.body};
+            Sauce.updateOne({_id: req.params.id}, {...sauceObject, _id: req.params.id})
+            .then(() => res.status(200).json({message: "Sauce modifiée !"}))
+            .catch(error => res.status(500).json({error}));
+        } else {
+            return res.status(403).json({error: "Unauthorized request"})
+        }
+    })
     .catch(error => res.status(500).json({error}));
 };
 
 exports.deleteSauce = (req, res, next) => {
     Sauce.findOne({_id: req.params.id})
     .then(sauce => {
-        const filename = sauce.imageUrl.split("/images/")[1];
-        fs.unlink(`images/${filename}`, () => {
-            Sauce.deleteOne({_id: req.params.id})
-            .then(() => res.status(200).json({message: "Sauce supprimée..."}))
-            .catch(error => res.status(400).json({error}));
-        })
+        if (sauce.userId === req.token.userId) {
+            const filename = sauce.imageUrl.split("/images/")[1];
+            fs.unlink(`images/${filename}`, () => {
+                Sauce.deleteOne({_id: req.params.id})
+                .then(() => res.status(200).json({message: "Sauce supprimée..."}))
+                .catch(error => res.status(400).json({error}));
+            })
+        } else {
+            return res.status(403).json({error: "Unauthorized request"})
+        }
     })
     .catch(error => res.status(500).json({error}));
 };
@@ -59,7 +71,6 @@ exports.sendOpinion = (req, res, next) => {
         const indexOfUsersLiked = sauce.usersLiked.indexOf(req.body.userId);
         const indexOfUsersDisliked = sauce.usersDisliked.indexOf(req.body.userId);
         if (indexOfUsersLiked > -1) {
-            // càd (req.body.like == 0)
             sauce.usersLiked.splice(indexOfUsersLiked, 1);
             sauce.likes = sauce.usersLiked.length;
             Sauce.updateOne({_id: req.params.id}, {
@@ -70,7 +81,6 @@ exports.sendOpinion = (req, res, next) => {
             .then(() => res.status(200).json({message: "Like retiré !"}))
             .catch(error => res.status(500).json({error}));
         } else if (indexOfUsersDisliked > -1) {
-            // càd (req.body.like == 0)
             sauce.usersDisliked.splice(indexOfUsersDisliked, 1);
             sauce.dislikes = sauce.usersDisliked.length;
             Sauce.updateOne({_id: req.params.id}, {

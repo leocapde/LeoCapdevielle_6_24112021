@@ -3,6 +3,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require('path');
+const helmet = require("helmet");
+const xssClean = require("xss-clean");
 
 const userRoutes = require("./routes/user");
 const sauceRoutes = require("./routes/sauce");
@@ -22,18 +24,15 @@ const app = express();
 
 // Middleware
 
-    // Ajout des headers pour éviter les erreurs CORS
-
     app.use((req, res, next) => {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
         next();
     });
-
-    // Analyse de la requête
-
     app.use(express.json());
+    app.use(helmet());
+    app.use(xssClean());
 
     // Création des routes
 
